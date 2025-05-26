@@ -23,4 +23,5 @@ vendor/
 .vscode
 
 coverage.html
-.env
+config/.env
+*.env
