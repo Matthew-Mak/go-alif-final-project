@@ -84,209 +84,194 @@ go run cmd/main.go
 
 Сервер будет доступен по адресу: `http://localhost:8080` (Или как вы указали в докер контейнере)
 
-## API Эндпоинты
+## Архитектура
 
-### Авторизация
-```
-POST   /auth/register     # Регистрация пользователя
-POST   /auth/login        # Вход в систему
-POST   /auth/refresh      # Обновление токена
+Проект следует принципам Clean Architecture с разделением на слои:
+
+```text
+workout-tracker/
+├── cmd/                    # Точки входа приложения
+├── internal/               # Внутренняя логика приложения
+│   ├── app/               # Конфигурация и инициализация
+│   ├── dto/               # Data Transfer Objects
+│   ├── handler/           # HTTP handlers
+│   │   ├── admin/         # Админские handlers
+│   │   ├── auth/          # Аутентификация handlers
+│   │   └── workout/       # Workout handlers
+│   ├── model/             # Модели данных
+│   ├── repository/        # Слой доступа к данным
+│   └── service/           # Бизнес-логика
+├── pkg/                   # Общие пакеты
+│   ├── db/               # Подключение к БД
+│   └── logger/           # Конфигурация логирования
+├── go.mod
+├── go.sum
+└── README.md
 ```
 
-### Тренировки (требует авторизации)
+## API Endpoints
+
+### Аутентификация
+- `POST /auth/register` - Регистрация пользователя
+```json
+{
+  "username" : "<your-username>",
+  "password" : "<your-password>"
+}
 ```
-POST   /workouts          # Создать тренировку
-GET    /workouts          # Список своих тренировок
-GET    /workouts/:id      # Получить тренировку по ID
-PUT    /workouts/:id      # Редактировать тренировку
-DELETE /workouts/:id      # Удалить тренировку
-POST   /workouts/:id/photo # Загрузить фото тренировки
-GET    /workouts/:id/photo # Получить фото тренировки
+- `POST /auth/login` - Вход в систему
+```json
+{
+  "username" : "<your-username>",
+  "password" : "<your-password>"
+}
 ```
+- `POST /auth/refresh` - Обновление access токена
+```json
+{
+  "refresh_token" : "<your-refresh-token>"
+}
+```
+
+### Тренировки (требуется аутентификация)
+- `GET /workouts` - Получить все тренировки пользователя
+- `GET /workouts/:id` - Получить конкретную тренировку
+- `POST /workouts` - Создать новую тренировку
+```json
+    {
+  "name": "My first Workout",
+  "title": "Push Day",
+  "category": "Upper Body",
+  "exercises": [
+    {
+      "exercise_id": 1,
+      "reps": 10,
+      "sets": 3
+    },
+    {
+      "exercise_id": 2,
+      "reps": 8,
+      "sets": 4
+    }
+  ]
+}
+```
+- `PUT /workouts/:id` - Обновить тренировку
+```json
+    {
+  "name": "My first Workout",
+  "title": "Push Day",
+  "category": "Upper Body",
+  "exercises": [
+    {
+      "exercise_id": 1,
+      "reps": 10,
+      "sets": 3
+    },
+    {
+      "exercise_id": 2,
+      "reps": 8,
+      "sets": 4
+    }
+  ]
+}
+```
+- `DELETE /workouts/:id` - Удалить тренировку
+- `POST /workouts/:id/photo` - Загрузить фото тренировки
+- `GET /workouts/:id/photo` - Получить фото тренировки
 
 ### Упражнения
+- `GET /exercises` - Получить все упражнения (требуется аутентификация)
+
+### Администрирование (требуется роль админа)
+- `GET /admin/exercises` - Получить все упражнения
+- `POST /admin/exercises` - Создать упражнение
+```json
+{
+  "name" : "<exercise-name>",
+  "description" : "<exercise-description>"
+}
 ```
-GET    /exercises         # Справочник упражнений (для всех пользователей)
+- `PUT /admin/exercises/:id` - Обновить упражнение
+```json
+{
+  "name" : "<exercise-name>",
+  "description" : "<exercise-description>"
+}
 ```
+- `DELETE /admin/exercises/:id` - Удалить упражнение
 
-### Администрирование (только для админов)
-```
-POST   /admin/exercises   # Создать упражнение
-GET    /admin/exercises   # Все упражнения
-PUT    /admin/exercises/:id # Обновить упражнение
-DELETE /admin/exercises/:id # Удалить упражнение
-```
 
-## Работа с файлами
+## Быстрый старт
+### Тестирование API
+Вы можете сразу протестировать API, используя развернутую версию:
 
-Приложение поддерживает загрузку фотографий тренировок:
-
-- **Формат загрузки**: `multipart/form-data`
-- **Хранение**: `./uploads/workouts/{id}/photo.jpg`
-- **Доступ**: через эндпоинт `GET /workouts/:id/photo`
-- **Поддерживаемые форматы**: JPG, JPEG, PNG
-- **Автоматическое удаление**: при удалении тренировки
-
-### Пример загрузки фото
+- Регистрация нового пользователя:
 ```bash
-curl -X POST \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -F "photo=@workout_photo.jpg" \
-  http://localhost:8080/workouts/1/photo
+curl -X POST https://go-alif-final-project5-production.up.railway.app/auth/register \
+-H "Content-Type: application/json" \
+-d '{"username": "testuser", "password": "password123"}'
 ```
 
-## Примеры использования
-
-### Регистрация пользователя
+- Вход в систему:
 ```bash
-curl -X POST http://localhost:8080/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "john_doe",
-    "email": "john@example.com",
-    "password": "securepassword"
-  }'
+curl -X POST https://go-alif-final-project5-production.up.railway.app/auth/login \
+-H "Content-Type: application/json" \
+-d '{"username": "testuser", "password": "password123"}'
 ```
 
-### Создание тренировки
+- Создание упражнений (нужны права администратора):
 ```bash
-curl -X POST http://localhost:8080/workouts \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Morning Workout",
-    "title": "Утренняя кардио тренировка",
-    "category": "cardio",
-    "exercises": [
-      {
-        "exercise_id": 1,
-        "sets": 3,
-        "reps": 15
-      }
-    ]
-  }'
+curl -X POST https://go-alif-final-project5-production.up.railway.app/admin/exercises \
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+-d '{"name": "присидания", "description": "для ног"}'
 ```
 
-## 🏗 Архитектура проекта
-
-```
-# Архитектура Go Fitness приложения
-
-```
-    go-alif-final-project/
-    ├── .github/                # Github workflows
-    │   └── workflows/         
-    │       ├── golang-lint.yml # Линтер кода
-    │       └── unit-tests.yml  # Юнит-тесты
-    ├── cmd/                    # Точки входа приложения
-    │   └── server/
-    │       └── main.go        # Главный файл запуска
-    ├── internal/               # Приватный код приложения
-    │   ├── app/               # Конфигурация приложения
-    │   │   ├── routes.go      # Маршрутизация
-    │   │   └── server.go      # HTTP сервер
-    │   ├── handler/           # HTTP обработчики (Presentation Layer)
-    │   │   ├── admin/         # Админские эндпоинты
-    │   │   ├── auth/          # Авторизация/регистрация
-    │   │   ├── workout/       # Управление тренировками
-    │   │   ├── interface.go   # Интерфейсы
-    │   │   └── middleware.go  # HTTP middleware
-    │   ├── service/           # Бизнес-логика (Business Layer)
-    │   │   ├── admin/         # Админские сервисы
-    │   │   ├── auth/          # Сервисы авторизации
-    │   │   └── workout/       # Сервисы тренировок
-    │   ├── repository/        # Слой данных (Data Access Layer)
-    │   │   ├── exercise/      # Репозиторий упражнений
-    │   │   ├── user/          # Репозиторий пользователей
-    │   │   └── workout/       # Репозиторий тренировок
-    │   ├── dto/               # Data Transfer Objects
-    │   │   ├── exercise/      # DTO упражнений
-    │   │   ├── user/          # DTO пользователей
-    │   │   ├── workout/       # DTO тренировок
-    │   │   └── workoutexercisejoin/ # DTO связей
-    │   └── errors/            # Обработка ошибок
-    │       └── error.go
-    ├── model/                  # Доменные модели (Domain Layer)
-    │   ├── exercise/          # Модель упражнений
-    │   ├── statistics/        # Модель статистики
-    │   ├── user/              # Модель пользователей
-    │   ├── workout/           # Модель тренировок
-    │   └── workoutexercisejoin/ # Связь many-to-many
-    ├── config/                 # Конфигурация
-    │   ├── .env              # Переменные окружения
-    │   └── config.go         # Загрузка конфигов
-    ├── docs/                   # Документация
-    │   └── swagger.yaml      # API спецификация
-    ├── migrations/            # Миграции БД
-    │   ├── 001_create_users_table.up.sql
-    │   └── 001_create_users_table.down.sql
-    ├── pkg/                   # Переиспользуемые пакеты
-    │   ├── db/               # Подключение к БД
-    │   └── logger/           # Система логирования
-    ├── uploads/               # Загруженные файлы
-    │   └── workouts/         # Файлы тренировок
-    ├── docker-compose.yml     # Docker конфигурация
-    ├── go.mod                 # Go модули
-    ├── golangci.yml          # Конфигурация линтера
-    └── README.md             # Документация проекта
-```
-
-## Архитектурные принципы
-
-**Clean Architecture** с разделением на 4 слоя:
-- **Presentation** (`handler/`) - HTTP обработчики
-- **Business Logic** (`service/`) - бизнес-правила  
-- **Data Access** (`repository/`) - работа с БД
-- **Domain** (`model/`) - доменные сущности
-
-**Основные домены**: Users, Auth, Workouts, Exercises, Statistics, Admin
-
-**Tech Stack**: Go, PostgreSQL, Swagger, GitHub Actions
-```
-
-## 🧪 Тестирование
-
+- Просмотр всех упражнений
 ```bash
-# Запуск всех тестов
-go test ./...
-
-# Запуск тестов с покрытием
-go test -cover ./...
-
-# Подробный отчет о покрытии
-go test -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
+curl -X GET https://go-alif-final-project5-production.up.railway.app/exercises \
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN" 
 ```
 
-## 🔧 Переменные окружения
-
-```env
-# Сервер
-PORT=8080
-GIN_MODE=release
-
-# База данных
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=workout_user
-DB_PASSWORD=your_password
-DB_NAME=workout_tracker
-DB_SSLMODE=disable
-
-# JWT
-JWT_SECRET=your-super-secret-key
-JWT_EXPIRE_HOURS=24
-REFRESH_TOKEN_EXPIRE_HOURS=720
-
-# Файлы
-UPLOAD_PATH=./uploads
-MAX_FILE_SIZE=10485760
+- Создание тренировки из выбранных упражнений
+```bash
+curl -X POST https://go-alif-final-project5-production.up.railway.app/workouts \
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+-d '{
+"name" : "день ног",
+"title": "тренировка для ног",
+"category": "Lower Body",
+"exercises": [
+    {
+      "exercise_id": 1,
+      "reps": 10,
+      "sets": 3
+    },
+    {
+      "exercise_id": 2,
+      "reps": 8,
+      "sets": 4
+    }
+  ]
+}'
 ```
 
-## Авторы
+- Просмотр тренировок после создания
+```bash
+curl -X GET https://go-alif-final-project5-production.up.railway.app/workouts \
+-H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
 
-- **ИМЯ АВТОРА** - [mamatsalay](https://github.com/mamatsalay)
-- **Маковецкий Матвей** - [Matthew-Mak](https://github.com/Matthew-Mak)
+## Деплой
+### Приложение автоматически развертывается на Railway при пуше в основную ветку.
+
+- Railway конфигурация
+
+```text
+URL: https://go-alif-final-project5-production.up.railway.app
+База данных: PostgreSQL (управляется Railway)
+Переменные окружения настроены через Railway Dashboard
+```
 
 
 ## Благодарности
