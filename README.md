@@ -57,7 +57,7 @@ REST API сервис на Go для ведения дневника трени�
 
 1. **Клонируйте репозиторий**
 ```bash
-git clone https://github.com/your-username/workout-tracker.git
+git clone https://github.com/Matthew-Mak/go-alif-final-project
 cd workout-tracker
 ```
 
@@ -82,7 +82,7 @@ docker-compose up -d postgres
 go run cmd/main.go
 ```
 
-Сервер будет доступен по адресу: `http://localhost:8080`
+Сервер будет доступен по адресу: `http://localhost:8080` (Или как вы указали в докер контейнере)
 
 ## API Эндпоинты
 
