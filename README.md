@@ -24,7 +24,7 @@ REST API сервис на Go для ведения дневника трени�
 - **Web Framework:** Gin
 - **База данных:** PostgreSQL
 - **Аутентификация:** JWT
-- **ORM/Query Builder:** pgx/v5
+- **Query Builder:** pgx/v5
 - **Dependency Injection:** go.uber.org/dig
 - **Логирование:** go.uber.org/zap
 - **Тестирование:** testify
