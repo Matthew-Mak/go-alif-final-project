@@ -1,6 +1,9 @@
 name: Units Tests, Coverage & Benchmarks
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
 permissions:
