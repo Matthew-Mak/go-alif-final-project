@@ -286,8 +286,9 @@ MAX_FILE_SIZE=10485760
 
 ## Авторы
 
-- **Ваше Имя** - *Initial work* - [Matthew-Mak](https://github.com/Matthew-Mak)
-- **Второй автор** - *Co-developer* - [mamatsalay](https://github.com/mamatsalay)
+- **ИМЯ АВТОРА** - [mamatsalay](https://github.com/mamatsalay)
+- **Маковецкий Матвей** - [Matthew-Mak](https://github.com/Matthew-Mak)
+
 
 ## Благодарности
 
