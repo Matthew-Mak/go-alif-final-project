@@ -3,7 +3,6 @@
 ![Go Version](https://img.shields.io/badge/Go-1.24.2-blue.svg)
 ![Test Coverage](https://img.shields.io/badge/coverage-70%25-green.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 REST API сервис на Go для ведения дневника тренировок. Позволяет пользователям планировать, записывать и отслеживать тренировки, управлять упражнениями и получать агрегированные отчёты.
 
